@@ -1,0 +1,22 @@
+{
+  "name": "loki-tail-worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev",
+    "pretest": "standard",
+    "test": "ava"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20230717.1",
+    "@types/object-inspect": "^1.8.1",
+    "ava": "^5.3.1",
+    "standard": "^17.1.0",
+    "typescript": "^5.1.6",
+    "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+  }
+}
