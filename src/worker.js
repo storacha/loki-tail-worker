@@ -19,6 +19,7 @@ export default {
       streams: events.map(toLoki)
     }
     if (env.DEBUG === 'true') {
+      // NOTE: it was not possible to see logs from the tail worker at time of writing... seems like a bug.
       console.log('POST', env.LOKI_URL, JSON.stringify(lokiBody))
     }
     const res = await fetch(env.LOKI_URL, {

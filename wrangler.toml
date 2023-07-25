@@ -15,8 +15,9 @@ ENV = "staging"
 DEBUG = "true"
 
 # PROD!
-[env.productuion]
+[env.production]
 account_id = "fffa4b4363a7e5250af8357087263b3a"
 
 [env.production.vars]
 ENV = "production"
+DEBUG = "false"
