@@ -5,8 +5,16 @@ compatibility_date = "2023-07-17"
 [vars]
 ENV = "dev"
 
+# STAGING!
+[env.staging]
+account_id = "fffa4b4363a7e5250af8357087263b3a"
+
 [env.staging.vars]
 ENV = "staging"
 
-[env.production.var]
+# STAGING!
+[env.productuion]
+account_id = "fffa4b4363a7e5250af8357087263b3a"
+
+[env.production.vars]
 ENV = "production"
