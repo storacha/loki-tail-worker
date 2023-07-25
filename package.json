@@ -1,6 +1,6 @@
 {
   "name": "loki-tail-worker",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +17,5 @@
     "typescript": "^5.1.6",
     "wrangler": "^3.0.0"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
