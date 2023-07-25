@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/web3-storage/loki-tail-worker/compare/v1.0.0...v1.0.1) (2023-07-25)
+
+
+### Bug Fixes
+
+* set production wrangler vars ([2684e54](https://github.com/web3-storage/loki-tail-worker/commit/2684e5459c1422a491d0c6b1d76a10f927b3f121))
+
 ## 1.0.0 (2023-07-25)
 
 
