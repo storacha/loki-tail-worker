@@ -1,8 +1,12 @@
+import { postToLoki, toLokiStream, toNano } from './loki.js'
+import { version } from '../package.json'
+
 /**
 * @typedef {object} Env
+* @prop {string} ENV - the environment name
 * @prop {string} LOKI_URL - full url to post logs to
 * @prop {string} LOKI_TOKEN - basic auth token for loki url
-* @prop {string} DEBUG - log every request
+* @prop {string} [DEBUG] - log every request
 */
 
 /**
@@ -16,88 +20,40 @@
 export default {
   async tail (events, env) {
     const lokiBody = {
-      streams: events.map(toLoki)
+      streams: events.map(toLokiStream)
     }
-    if (env.DEBUG === 'true') {
-      // NOTE: it was not possible to see logs from the tail worker at time of writing... seems like a bug.
-      console.log('POST', env.LOKI_URL, JSON.stringify(lokiBody))
+    await postToLoki(lokiBody, env)
+  },
+
+  /**
+   * For testing. It' not currently possible to see the tail worker's logs, so
+   * use this fetch handler to see if things are working
+   * */
+  async fetch (request, env) {
+    const { pathname } = new URL(request.url)
+    if (pathname === '' || pathname === '/') {
+      const body = `⁂ loki-${env.ENV} v${version}\n`
+      return new Response(body, {
+        headers: { 'content-type': 'text/plain; charset=utf-8' }
+      })
     }
-    const res = await fetch(env.LOKI_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${env.LOKI_TOKEN}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'loki-tail-worker'
-      },
-      body: JSON.stringify(lokiBody)
-    })
-    if (!res.ok || env.DEBUG === 'true') {
-      console.log(`${res.status} ${res.statusText} ${res.url}`)
-      const text = await res.text()
-      console.log(text)
-      if (!res.ok) {
-        throw new Error(`Failed to POST to loki ${res.status} ${res.url} ${text}`)
+
+    // send test logs to loki
+    if (env.DEBUG && pathname === '/test') {
+      /** @type {import('./loki.js').LokiBody} */
+      const lokiBody = {
+        streams: [{
+          stream: {
+            worker: 'test'
+          },
+          values: [
+            [toNano(Date.now()), JSON.stringify(request.cf)]
+          ]
+        }]
       }
+      return postToLoki(lokiBody, env)
     }
-  }
-}
 
-/**
- * @param {TraceItem} tailItem
- */
-export function toLoki (tailItem) {
-  const req = formatRequest(tailItem)
-  const logs = tailItem.logs.map(formatLog)
-  const errs = tailItem.exceptions.map(formatException)
-  /** @type [string, string][] */
-  const values = [...logs, ...errs]
-  if (req !== undefined) {
-    values.unshift(req)
+    return new Response('Not found', { status: 404 })
   }
-  return {
-    stream: {
-      worker: tailItem.scriptName,
-      outcome: tailItem.outcome
-    },
-    values
-  }
-}
-
-/** @param {number} ms epoch time in milliseconds */
-export function toNano (ms) {
-  const nano = BigInt(ms) * BigInt(1_000_000)
-  return nano.toString()
-}
-
-/**
- * @param {TraceItem} item
- * @returns {[string, string] | undefined}
- **/
-export function formatRequest ({ eventTimestamp, event }) {
-  // @ts-expect-error checking for request here
-  const request = event?.request
-  if (eventTimestamp && request) {
-    const { url, method, headers, cf } = request
-    return [toNano(eventTimestamp), JSON.stringify({ url, method, headers, cf, level: 'request' })]
-  }
-}
-
-/**
- * @param {TraceLog} log
- * @returns {[string, string]}
- **/
-export function formatLog ({ timestamp, message, level }) {
-  const [first, ...args] = message
-  if (typeof first === 'object') {
-    return [toNano(timestamp), JSON.stringify({ ...first, args, level })]
-  }
-  return [toNano(timestamp), JSON.stringify({ msg: first, args, level })]
-}
-
-/**
- * @param {TraceException} e
- * @returns {[string, string]}
- **/
-export function formatException ({ timestamp, name, message }) {
-  return [toNano(timestamp), JSON.stringify({ msg: message, name, level: 'fatal' })]
 }
