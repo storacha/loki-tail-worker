@@ -12,7 +12,7 @@ account_id = "fffa4b4363a7e5250af8357087263b3a"
 [env.staging.vars]
 ENV = "staging"
 
-# STAGING!
+# PROD!
 [env.productuion]
 account_id = "fffa4b4363a7e5250af8357087263b3a"
 
