@@ -1,3 +1,12 @@
 name = "loki"
 main = "src/worker.js"
 compatibility_date = "2023-07-17"
+
+[vars]
+ENV = "dev"
+
+[env.staging.vars]
+ENV = "staging"
+
+[env.production.var]
+ENV = "production"
