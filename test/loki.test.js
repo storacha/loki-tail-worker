@@ -1,9 +1,9 @@
-import { toLoki } from '../src/worker.js'
+import { toLokiStream } from '../src/loki.js'
 import events from './fixture/events.js'
 import test from 'ava'
 
-test('toLoki', t => {
-  const actual = toLoki(events[0])
+test('toLokiStream', t => {
+  const actual = toLokiStream(events[0])
   const { stream, values } = actual
 
   t.like(stream, {
