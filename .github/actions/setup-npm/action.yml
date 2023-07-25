@@ -1,0 +1,13 @@
+name: setup-npm
+description: Setup node and npm
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v3
+      with:
+        registry-url: 'https://registry.npmjs.org'
+        node-version: 18
+        cache: 'npm'
+    - run: npm ci
+      shell: bash
