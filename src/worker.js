@@ -3,7 +3,11 @@
  *
  * @see https://developers.cloudflare.com/workers/runtime-apis/tail-event/
  * @see https://developers.cloudflare.com/workers/observability/tail-workers/
- * @type {ExportedHandler}
+ *
+ * @type {ExportedHandler<Env>}
+ * @typedef {object} Env
+ * @prop {string} LOKI_URL - full url to post logs to
+ * @prop {string} LOKI_TOKEN - basic auth token for loki url
  */
 export default {
   async tail (events, env) {
@@ -57,8 +61,8 @@ export function formatRequest ({ eventTimestamp, event }) {
   // @ts-expect-error checking for request here
   const request = event?.request
   if (eventTimestamp && request) {
-    const { url, method, cf } = request
-    return [toNano(eventTimestamp), { url, method, cf, level: 'request' }]
+    const { url, method, headers, cf } = request
+    return [toNano(eventTimestamp), { url, method, headers, cf, level: 'request' }]
   }
 }
 
