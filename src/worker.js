@@ -57,6 +57,7 @@ export function toLoki (tailItem) {
   return {
     stream: {
       worker: tailItem.scriptName,
+      worker_version_id: tailItem.scriptVersion?.id,
       outcome: tailItem.outcome
     },
     values
