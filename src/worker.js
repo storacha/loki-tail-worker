@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /**
 * @typedef {object} Env
 * @prop {string} LOKI_URL - full url to post logs to
@@ -47,8 +48,8 @@ export default {
  */
 export function toLoki (tailItem) {
   const req = formatRequest(tailItem)
-  const logs = tailItem.logs.map(formatLog)
-  const errs = tailItem.exceptions.map(formatException)
+  const logs = tailItem.logs.map(formatLog.bind(null, (req === undefined) ? null : JSON.parse(req[1]).request_id))
+  const errs = tailItem.exceptions.map(formatException.bind(null, (req === undefined) ? null : JSON.parse(req[1]).request_id))
   /** @type [string, string][] */
   const values = [...logs, ...errs]
   if (req !== undefined) {
@@ -57,6 +58,7 @@ export function toLoki (tailItem) {
   return {
     stream: {
       worker: tailItem.scriptName,
+      worker_version_id: tailItem.scriptVersion?.id,
       outcome: tailItem.outcome
     },
     values
@@ -78,26 +80,28 @@ export function formatRequest ({ eventTimestamp, event }) {
   const request = event?.request
   if (eventTimestamp && request) {
     const { url, method, headers, cf } = request
-    return [toNano(eventTimestamp), JSON.stringify({ url, method, headers, cf, level: 'request' })]
+    return [toNano(eventTimestamp), JSON.stringify({ url, method, headers, cf, level: 'request', request_id: headers['cf-ray'] })]
   }
 }
 
 /**
+ * @param {string | null} request_id
  * @param {TraceLog} log
  * @returns {[string, string]}
  **/
-export function formatLog ({ timestamp, message, level }) {
+export function formatLog (request_id, { timestamp, message, level }) {
   const [first, ...args] = message
   if (typeof first === 'object') {
-    return [toNano(timestamp), JSON.stringify({ ...first, args, level })]
+    return [toNano(timestamp), JSON.stringify({ ...first, args, level, request_id })]
   }
-  return [toNano(timestamp), JSON.stringify({ msg: first, args, level })]
+  return [toNano(timestamp), JSON.stringify({ msg: first, args, level, request_id })]
 }
 
 /**
+ * @param {string | null} request_id
  * @param {TraceException} e
  * @returns {[string, string]}
  **/
-export function formatException ({ timestamp, name, message }) {
-  return [toNano(timestamp), JSON.stringify({ msg: message, name, level: 'fatal' })]
+export function formatException (request_id, { timestamp, name, message }) {
+  return [toNano(timestamp), JSON.stringify({ msg: message, name, level: 'fatal', request_id })]
 }
